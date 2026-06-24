@@ -15,10 +15,31 @@ keeps going.
 **The product being built is intentionally undefined.** This repo is the *harness*,
 not the product.
 
-## Status: SPEC — not yet scaffolded
+## Status: CORE SCAFFOLDED — not yet run
 
-Nothing here is built yet. The coordination spine, worker loop, genesis protocol, and
-CI gate are still being specified. See [`docs/DECISIONS.md`](docs/DECISIONS.md).
+The harness skeleton exists. Not yet wired to a live Supabase/Vercel and not yet run.
+
+```
+START.md                  ← the one command: what `start` does (idempotent)
+CLAUDE.md                 ← per-session boot contract (auto-read)
+spine/
+  schema.sql              ← 5 tables + claim_task / renew_lease / heartbeat / reap_stale RPCs
+  README.md
+protocol/
+  worker-loop.md  idempotency.md  blockers.md  tdd-gate.md
+governance/
+  decision-protocol.md    ← genesis · debate (≤3 rounds) · ratify · amend
+  roles/                  ← CEO, Architect, Integrator (singletons) + pooled roles + template
+.github/workflows/ci.yml  ← the 100% + e2e merge gate
+scripts/
+  bootstrap.sh            ← load env, verify keys, apply spine
+  swarm-up.sh             ← tmux launcher (one pane per role, types `start`)
+.env.example  docs/ENV.md ← keys + the no-secrets-in-repo rule (D6)
+docs/DECISIONS.md         ← every locked decision and why
+```
+
+**Next:** provision Supabase + Vercel + a GitHub PAT, fill `.env`, apply the spine, add the
+CI jobs as required status checks, and do the genesis dry-run before full fan-out.
 
 ## Locked decisions
 

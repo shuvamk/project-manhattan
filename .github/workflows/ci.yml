@@ -1,0 +1,56 @@
+name: gate
+# The merge gate (D4): no PR reaches main unless coverage is 100% and e2e are green.
+# Add this workflow's jobs as REQUIRED status checks in branch protection once the
+# walking-skeleton PR has run it once. Until the Next.js app exists, these jobs are
+# inert (no package.json) — the walking-skeleton task makes them real.
+
+on:
+  pull_request:
+    branches: [main]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: gate-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  coverage:
+    name: unit + component — 100% coverage
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: { node-version: 20, cache: npm }
+      - name: skip if app not scaffolded yet
+        id: guard
+        run: |
+          if [ -f package.json ]; then echo "go=true" >> "$GITHUB_OUTPUT";
+          else echo "go=false" >> "$GITHUB_OUTPUT"; echo "No package.json yet — gate inert."; fi
+      - if: steps.guard.outputs.go == 'true'
+        run: npm ci
+      - if: steps.guard.outputs.go == 'true'
+        # vitest config MUST set coverage thresholds to 100 (lines/branches/functions/statements)
+        run: npm run test:coverage
+
+  e2e:
+    name: playwright e2e
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: { node-version: 20, cache: npm }
+      - name: skip if app not scaffolded yet
+        id: guard
+        run: |
+          if [ -f package.json ]; then echo "go=true" >> "$GITHUB_OUTPUT";
+          else echo "go=false" >> "$GITHUB_OUTPUT"; echo "No package.json yet — gate inert."; fi
+      - if: steps.guard.outputs.go == 'true'
+        run: npm ci
+      - if: steps.guard.outputs.go == 'true'
+        run: npx playwright install --with-deps chromium
+      - if: steps.guard.outputs.go == 'true'
+        # builds, starts the app, runs Playwright against it. Hermetic — no Vercel dependency.
+        # (A preview-deploy smoke can be ADDED later per E1, but the hard gate stays self-contained.)
+        run: npm run test:e2e
