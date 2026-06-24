@@ -2,6 +2,47 @@
 
 Append-only record of locked architectural decisions. Newest first.
 
+## D7 — Genesis & operations (resolves OPEN-QUESTIONS A–F)
+
+- **A1 Charter gate:** agents converge → CEO gets a ratify/veto window with an
+  **auto-proceed timeout**. One cheap human checkpoint; hands-off-capable.
+- **A2 Stop condition:** **run forever until the CEO pauses.** There is no automatic
+  stop, so the **per-provider billing caps (C1) + the `control` kill switch are the only
+  safety net** — they are load-bearing, not optional.
+- **A3 Human-only decisions:** agent takes the **safe / reversible / test-mode default,
+  logs an escalation, and keeps moving.** Never blocks on a human.
+- **B1 Proposals:** **any role may submit one idea**; a structured score ranks them; CEO
+  seeds and breaks ties.
+- **B2 Rubric + cap:** judged on **feasibility (can the swarm TDD it) + value + shippable
+  scope**; **hard cap of 3 debate rounds**, then forced decision.
+- **B3 Amendments:** charter is **re-openable** via a formal amendment RFC that passes the
+  same A1 ratify gate. Self-correcting without thrash.
+- **C1 Spend caps:** **~$50 per provider** to start (OpenAI, Anthropic, Vercel, Supabase,
+  Runpod, R2). Lift only after the spine is proven stable.
+- **C2 Idle behavior:** an idle worker does **swarm-useful work** (review open PRs, write
+  missing tests, refine docs) instead of sleeping — but **bounded by the pause flag and a
+  global spend-rate governor** so run-forever + $50 caps don't burn out.
+- **D1 Capability discovery:** the harness **wires in nothing from the owner's local
+  machine.** Agents **discover available tools/MCPs at runtime** and degrade gracefully
+  (use Figma/Higgsfield/Lottie if present, code-only if not). Core tenet: *assume nothing
+  about the host; discover, don't hardcode.*
+- **D2 Singletons:** **CEO** (runs genesis once), **Integrator** (owns merge queue),
+  **Architect** (sole decomposer — owns task graph + module ownership). All else pooled.
+- **E1 Test stack:** **Vitest (unit) + component tests + Playwright e2e against the live
+  Vercel preview deploy per PR.** Live-preview e2e is what makes the 100% gate real.
+- **E2 Coverage ignore-list:** **Architect owns it, Security Advisor approves, every change
+  is a reviewed PR.** Prevents faking 100% by exempting hard code.
+- **F1 Human window:** **Postgres-backed live dashboard (Supabase Realtime) is primary;**
+  GitHub Issues are used only for **escalations + locked decisions**, not every task.
+- **F2 Day-one scale:** launch at **2+ laptops × 8–10 tabs** (full roster). Gated by a
+  **mandatory genesis dry-run**: prove claim→PR→CI→merge on the walking skeleton before
+  full fan-out.
+
+### Derived guards (consequences of the above)
+- **Spend-rate governor:** a global $/hour throttle on top of provider caps, because A2 +
+  C2 + F2 all push spend up against tight C1 caps.
+- **Genesis dry-run gate:** no full fan-out until the loop is proven once, end to end.
+
 ## D6 — Repo is PUBLIC; secrets never enter it (amends D3)
 The repo was made public (unlocks free branch protection + required status checks).
 Consequence: **no real secret may ever be committed — not even encrypted.** Public Git
