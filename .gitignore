@@ -1,0 +1,16 @@
+# Secrets — only the ENCRYPTED form (.env.age / git-crypt) may ever be committed.
+.env
+.env.*
+!.env.age
+!.env.example
+
+# Node / Next
+node_modules/
+.next/
+out/
+dist/
+coverage/
+*.log
+
+# OS
+.DS_Store
