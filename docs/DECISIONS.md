@@ -2,6 +2,21 @@
 
 Append-only record of locked architectural decisions. Newest first.
 
+## D6 — Repo is PUBLIC; secrets never enter it (amends D3)
+The repo was made public (unlocks free branch protection + required status checks).
+Consequence: **no real secret may ever be committed — not even encrypted.** Public Git
+history is permanent and globally indexed; encrypted blobs are offline-brute-forceable.
+This supersedes the "commit the encrypted env" part of D3.
+
+New secrets model:
+- **Repo:** `.env.example` with placeholder names only.
+- **Owner's fleet:** real `.env` delivered via a private channel (Doppler / 1Password /
+  private sibling repo / out-of-band); `bootstrap.sh` pulls/decrypts from there.
+- **Public cloners:** bring their own keys and run on their own billing.
+
+Every provider key still gets a hard spend cap. "Anyone can clone and `start`" now means
+*with their own keys*, which is the correct open-source posture.
+
 ## D1 — Coordination truth: Postgres spine, not GitHub Issues
 Supabase Postgres is the source of truth for claims, leases, dependency graph, and
 idempotency. Agents claim work via a `claim_task()` **RPC over HTTPS** (PostgREST),
